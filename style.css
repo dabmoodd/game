@@ -1,15 +1,345 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #0d1015;
-  touch-action: none;
-  -webkit-user-select: none;
-  user-select: none;
+:root {
+  --ocean: #1f6f93;
+  --ink: #0d1015;
+  --parchment: #e8dfc8;
+  --bright: #fff6df;
+  --gold: #d1a13f;
 }
 
-canvas {
-  display: block;
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0; width: 100%; height: 100%;
+  overflow: hidden; background: #0d1015;
+  touch-action: none;
+  -webkit-user-select: none; user-select: none;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+
+canvas#game {
+  position: fixed; inset: 0; display: block; z-index: 0;
+}
+
+.hidden { display: none !important; }
+
+/* =====================================================
+   "Liquid Glass" (iOS 26) — настоящий блюр того, что
+   находится позади элемента, через backdrop-filter.
+   Никаких имитаций на канвасе — это и есть жидкое стекло.
+   ===================================================== */
+.glass {
+  background: rgba(28, 30, 35, 0.46);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -14px 22px rgba(0, 0, 0, 0.10);
+}
+
+/* акцентное (тёплое) стекло — для главной кнопки "Играть" */
+.glass-accent {
+  background: rgba(190, 138, 40, 0.42);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -14px 22px rgba(80, 50, 10, 0.14);
+}
+
+/* Настройка "Жидкое стекло" выключена — плоские заливки,
+   без backdrop-filter (дёшево по производительности). */
+body.glass-off .glass {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: #23262b;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+body.glass-off .glass-accent { background: #caa257; }
+
+/* ===================== общие экраны ===================== */
+.screen {
+  position: fixed; inset: 0; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+/* ===================== главное меню ===================== */
+#menuScreen {
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.title {
+  font-family: "Arial Narrow", "Helvetica Neue Condensed", Arial, sans-serif;
+  font-weight: 800;
+  font-size: clamp(34px, 13vw, 68px);
+  letter-spacing: 0.08em;
+  color: var(--bright);
+  -webkit-text-stroke: 4px var(--ink);
+  paint-order: stroke fill;
+  text-align: center;
+  margin-bottom: 28px;
+  white-space: nowrap;
+}
+
+.btn {
+  border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  border-radius: 999px;
+  font-weight: 800; letter-spacing: 0.04em;
+  transition: transform 0.08s ease;
+}
+.btn:active { transform: scale(0.97) translateY(2px); }
+
+.btn-settings {
+  width: min(58vw, 226px);
+  height: 56px;
+  font-size: 15px;
+  color: var(--bright);
+}
+.btn-play {
+  width: calc(min(58vw, 226px) * 1.5);
+  height: calc(56px * 1.5);
+  font-size: 19px;
+  color: var(--ink);
+}
+
+.version-label {
+  margin-top: 10px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: rgba(232, 223, 200, 0.55);
+  text-align: center;
+}
+
+/* ===================== попап выбора режима ===================== */
+.overlay {
+  position: fixed; inset: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(5, 8, 12, 0.4);
+  padding: 20px;
+  animation: overlayIn 0.2s ease both;
+}
+.overlay.closing { animation: overlayOut 0.18s ease both; }
+
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes overlayOut { from { opacity: 1; } to { opacity: 0; } }
+
+.modal-panel {
+  position: relative;
+  width: min(90vw, 440px);
+  border-radius: 34px;
+  padding: 54px 22px 22px;
+  display: flex; flex-direction: column; gap: 18px;
+  animation: panelIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.overlay.closing .modal-panel { animation: panelOut 0.18s ease both; }
+
+@keyframes panelIn {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes panelOut {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.94) translateY(6px); }
+}
+
+.modal-title {
+  position: absolute; top: 18px; left: 0; right: 0;
+  text-align: center;
+  font-weight: 800; font-size: 19px; letter-spacing: 0.06em;
+  color: var(--bright);
+}
+
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  color: var(--bright); font-size: 15px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.08s ease;
+}
+.icon-btn:active { transform: scale(0.92); }
+
+#modalClose { position: absolute; top: 10px; right: 14px; }
+
+.mode-btn {
+  border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  border-radius: 22px;
+  padding: 14px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  transition: transform 0.08s ease;
+}
+.mode-btn:active { transform: scale(0.98); }
+.mode-label { font-weight: 800; font-size: 17px; letter-spacing: 0.04em; color: var(--bright); }
+.mode-desc { font-size: 12.5px; color: rgba(232, 223, 200, 0.75); text-align: center; }
+
+/* ===================== экран настроек ===================== */
+#settingsScreen {
+  align-items: stretch;
+  padding: 18px;
+  gap: 14px;
+  animation: screenIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+#settingsScreen.closing { animation: screenOut 0.22s ease both; }
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateX(36px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes screenOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(36px); }
+}
+
+.settings-header {
+  display: flex; align-items: center; gap: 14px;
+  flex: 0 0 auto;
+}
+.settings-title { font-weight: 800; font-size: 20px; letter-spacing: 0.02em; color: var(--bright); }
+
+.tab-bar {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  border-radius: 999px;
+  padding: 4px;
+  align-self: center;
+  width: min(100%, 460px);
+}
+.tab {
+  position: relative; z-index: 1;
+  flex: 1;
+  border: none; background: transparent; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  padding: 11px 4px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+  color: rgba(232, 223, 200, 0.55);
+  transition: color 0.15s ease;
+}
+.tab.active { color: var(--bright); font-weight: 800; }
+
+.settings-panel {
+  flex: 1 1 auto;
+  border-radius: 26px;
+  align-self: center;
+  width: min(100%, 460px);
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+
+.tab-content { animation: tabContentIn 0.22s ease both; }
+@keyframes tabContentIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.row-label-h {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+  color: rgba(232, 223, 200, 0.55);
+  margin: 18px 0 8px;
+}
+.row-label-h:first-child { margin-top: 0; }
+
+.segmented {
+  position: relative;
+  display: flex;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 999px;
+  padding: 3px;
+}
+.seg {
+  position: relative; z-index: 1;
+  flex: 1;
+  border: none; background: transparent; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  padding: 11px 4px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.02em;
+  color: rgba(232, 223, 200, 0.55);
+  transition: color 0.15s ease;
+}
+.seg.active { color: var(--bright); font-weight: 700; }
+
+/* ползущий индикатор активного пункта — общий для вкладок и
+   сегментированных переключателей */
+.indicator {
+  position: absolute;
+  top: 3px; bottom: 3px; left: 0; width: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: left 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+body.glass-off .indicator { background: rgba(255, 255, 255, 0.22); box-shadow: none; }
+
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0;
+}
+.row-label { font-size: 14px; font-weight: 600; color: var(--bright); }
+
+.toggle {
+  width: 50px; height: 30px; border-radius: 15px;
+  border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  background: rgba(255, 255, 255, 0.18);
+  position: relative; flex: 0 0 auto;
+  transition: background 0.15s ease;
+}
+.toggle[aria-pressed="true"] { background: var(--gold); }
+.toggle-knob {
+  position: absolute; top: 3px; left: 3px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: left 0.15s ease;
+}
+.toggle[aria-pressed="true"] .toggle-knob { left: 23px; }
+
+.slider-row { padding: 11px 0; }
+.slider-row-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.slider-value { font-size: 12px; color: rgba(232, 223, 200, 0.7); }
+
+.slider {
+  width: 100%; height: 6px; border-radius: 3px;
+  -webkit-appearance: none; appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  outline: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.slider::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; border: none; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.slider::-moz-range-track { background: transparent; }
+
+.swatch-row { display: flex; gap: 14px; padding: 6px 0 4px; flex-wrap: wrap; }
+.swatch {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.14);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.swatch.active {
+  border-color: var(--bright);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+  transform: scale(1.08);
+}
+.shape { width: 16px; height: 16px; background: var(--bright); }
+.shape-circle { border-radius: 50%; }
+.shape-square { border-radius: 3px; }
+.shape-triangle { clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }
+.shape-diamond { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+.shape-star { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }

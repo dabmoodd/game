@@ -7,7 +7,141 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <canvas id="game"></canvas>
+
+<!-- ===================== ГЛАВНОЕ МЕНЮ ===================== -->
+<div id="menuScreen" class="screen">
+  <div class="title">LINES OF WAR</div>
+  <button class="btn btn-play glass glass-accent" id="btnPlay">ИГРАТЬ</button>
+  <button class="btn btn-settings glass" id="btnSettings">НАСТРОЙКИ</button>
+  <div class="version-label">version 0.2</div>
+</div>
+
+<!-- ===================== ПОПАП ВЫБОРА РЕЖИМА ===================== -->
+<div id="modeOverlay" class="overlay hidden">
+  <div class="modal-panel glass">
+    <div class="modal-title">РЕЖИМ</div>
+    <button class="icon-btn glass" id="modalClose" aria-label="Закрыть">✕</button>
+
+    <button class="mode-btn glass" id="mode1Btn">
+      <span class="mode-label">1 VS 1</span>
+      <span class="mode-desc">Один противник, дуэль на карте</span>
+    </button>
+    <button class="mode-btn glass" id="mode2Btn">
+      <span class="mode-label">СЦЕНАРИИ</span>
+      <span class="mode-desc">Несколько противников, общий фронт</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== ЭКРАН НАСТРОЕК ===================== -->
+<div id="settingsScreen" class="screen hidden">
+  <div class="settings-header">
+    <button class="icon-btn glass" id="settingsBack" aria-label="Назад">←</button>
+    <div class="settings-title">НАСТРОЙКИ</div>
+  </div>
+
+  <div class="tab-bar glass" id="tabBar">
+    <span class="indicator"></span>
+    <button class="tab active" data-tab="game">ИГРА</button>
+    <button class="tab" data-tab="graphics">ГРАФИКА</button>
+    <button class="tab" data-tab="sound">ЗВУК</button>
+    <button class="tab" data-tab="lang">ЯЗЫК</button>
+  </div>
+
+  <div class="settings-panel glass">
+
+    <!-- ИГРА -->
+    <div class="tab-content" data-tab-content="game">
+      <div class="row-label-h">РАЗМЕР ИНТЕРФЕЙСА</div>
+      <div class="segmented" data-key="interfaceSize">
+        <span class="indicator"></span>
+        <button class="seg" data-value="0">МАЛЕНЬКИЙ</button>
+        <button class="seg active" data-value="1">СРЕДНИЙ</button>
+        <button class="seg" data-value="2">БОЛЬШОЙ</button>
+      </div>
+
+      <div class="row-label-h">УПРАВЛЕНИЕ</div>
+      <div class="segmented" data-key="controlScheme">
+        <span class="indicator"></span>
+        <button class="seg active" data-value="0">СВАЙП</button>
+        <button class="seg" data-value="1">КНОПКИ</button>
+      </div>
+
+      <div class="row-label-h">ЦВЕТ ВОЙСК</div>
+      <div class="swatch-row" data-key="troopColor">
+        <button class="swatch active" data-value="0" style="background:#d1a13f"></button>
+        <button class="swatch" data-value="1" style="background:#5c6b42"></button>
+        <button class="swatch" data-value="2" style="background:#7a4138"></button>
+        <button class="swatch" data-value="3" style="background:#3f5566"></button>
+        <button class="swatch" data-value="4" style="background:#a98f5c"></button>
+        <button class="swatch" data-value="5" style="background:#6b5b8a"></button>
+      </div>
+
+      <div class="row-label-h">ЗНАЧКИ ВОЙСК</div>
+      <div class="swatch-row" data-key="troopIcon">
+        <button class="swatch icon-swatch active" data-value="0"><span class="shape shape-circle"></span></button>
+        <button class="swatch icon-swatch" data-value="1"><span class="shape shape-square"></span></button>
+        <button class="swatch icon-swatch" data-value="2"><span class="shape shape-triangle"></span></button>
+        <button class="swatch icon-swatch" data-value="3"><span class="shape shape-diamond"></span></button>
+        <button class="swatch icon-swatch" data-value="4"><span class="shape shape-star"></span></button>
+      </div>
+    </div>
+
+    <!-- ГРАФИКА -->
+    <div class="tab-content hidden" data-tab-content="graphics">
+      <div class="row-label-h">КАЧЕСТВО ГРАФИКИ</div>
+      <div class="segmented" data-key="graphicsQuality">
+        <span class="indicator"></span>
+        <button class="seg" data-value="0">НИЗКОЕ</button>
+        <button class="seg" data-value="1">СРЕДНЕЕ</button>
+        <button class="seg active" data-value="2">ВЫСОКОЕ</button>
+        <button class="seg" data-value="3">УЛЬТРА</button>
+      </div>
+
+      <div class="setting-row">
+        <span class="row-label">СГЛАЖИВАНИЕ</span>
+        <button class="toggle" data-key="antialiasing" aria-pressed="true"><span class="toggle-knob"></span></button>
+      </div>
+
+      <div class="setting-row">
+        <span class="row-label">ЖИДКОЕ СТЕКЛО</span>
+        <button class="toggle" data-key="liquidGlass" aria-pressed="true"><span class="toggle-knob"></span></button>
+      </div>
+    </div>
+
+    <!-- ЗВУК -->
+    <div class="tab-content hidden" data-tab-content="sound">
+      <div class="slider-row">
+        <div class="slider-row-top">
+          <span class="row-label">ЗВУКОВЫЕ ЭФФЕКТЫ</span>
+          <span class="slider-value" data-value-for="sfxVolume">80%</span>
+        </div>
+        <input type="range" class="slider" data-key="sfxVolume" min="0" max="100" value="80">
+      </div>
+      <div class="slider-row">
+        <div class="slider-row-top">
+          <span class="row-label">МУЗЫКА</span>
+          <span class="slider-value" data-value-for="musicVolume">65%</span>
+        </div>
+        <input type="range" class="slider" data-key="musicVolume" min="0" max="100" value="65">
+      </div>
+    </div>
+
+    <!-- ЯЗЫК -->
+    <div class="tab-content hidden" data-tab-content="lang">
+      <div class="row-label-h">ЯЗЫК</div>
+      <div class="segmented" data-key="language">
+        <span class="indicator"></span>
+        <button class="seg active" data-value="0">РУССКИЙ</button>
+        <button class="seg" data-value="1">ENGLISH</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script src="script.js"></script>
 </body>
 </html>
