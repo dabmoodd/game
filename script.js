@@ -231,6 +231,14 @@
     btn.addEventListener('click', () => {
       const wasOn = btn.getAttribute('aria-pressed') === 'true';
       btn.setAttribute('aria-pressed', String(!wasOn));
+
+      // запускаем "жидкий" морф в нужную сторону
+      btn.style.setProperty('--knob-dir', wasOn ? 'knobMorphOff' : 'knobMorphOn');
+      btn.classList.remove('morphing');
+      void btn.offsetWidth; // форсируем перезапуск анимации, если кликнули повторно быстро
+      btn.classList.add('morphing');
+      setTimeout(() => btn.classList.remove('morphing'), 380);
+
       const key = btn.dataset.key;
       settingsValues[key] = !wasOn;
       if (key === 'liquidGlass') {
