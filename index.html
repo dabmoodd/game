@@ -14,7 +14,7 @@
   <div class="title">LINES OF WAR</div>
   <button class="btn btn-play glass glass-accent" id="btnPlay" data-i18n="play">ИГРАТЬ</button>
   <button class="btn btn-settings glass" id="btnSettings" data-i18n="settings">НАСТРОЙКИ</button>
-  <div class="version-label">version 0.3.0</div>
+  <div class="version-label">version 0.4.0</div>
 </div>
 
 <div id="langPickerOverlay" class="overlay hidden">
@@ -138,6 +138,143 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<div id="gameSetupScreen" class="screen hidden">
+  <div class="settings-header">
+    <button class="icon-btn glass" id="setupBack" aria-label="Назад">←</button>
+    <div class="settings-title">1 VS 1</div>
+  </div>
+
+  <div class="setup-body">
+    <div class="setup-left glass">
+
+      <div class="row-label-h" data-i18n="mapLabel">КАРТА</div>
+      <div class="map-row" id="mapRow">
+        <button class="map-thumb active" data-map="0">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 72,0 80,20 60,40 78,60 65,80 74,100 0,100" fill="var(--side-blue)"/><polygon points="72,0 160,0 160,100 74,100 65,80 78,60 60,40 80,20" fill="var(--side-red)"/></svg>
+          <span data-i18n="mapPlains">РАВНИНА</span>
+        </button>
+        <button class="map-thumb" data-map="1">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 160,0 160,42 135,50 110,40 80,52 50,38 25,55 0,45" fill="var(--side-blue)"/><polygon points="0,45 25,55 50,38 80,52 110,40 135,50 160,42 160,100 0,100" fill="var(--side-red)"/></svg>
+          <span data-i18n="mapValley">ДОЛИНА</span>
+        </button>
+        <button class="map-thumb" data-map="2">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 160,0 160,100 0,100" fill="var(--side-red)"/><polygon points="0,20 60,20 95,45 60,80 0,80" fill="var(--side-blue)"/></svg>
+          <span data-i18n="mapPeninsula">ПОЛУОСТРОВ</span>
+        </button>
+        <button class="map-thumb" data-map="3">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 160,0 160,100 0,100" fill="var(--side-red)"/><polygon points="40,12 55,20 58,38 45,48 28,42 25,25" fill="var(--side-blue)"/><polygon points="115,49 128,55 130,72 118,80 102,75 100,58" fill="var(--side-blue)"/><polygon points="100,10 110,14 108,26 96,28 90,18" fill="var(--side-blue)"/></svg>
+          <span data-i18n="mapIslands">ОСТРОВА</span>
+        </button>
+        <button class="map-thumb" data-map="4">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 160,0 160,100 0,100" fill="var(--side-blue)"/><polygon points="80,22 102,30 112,50 102,70 80,78 58,70 48,50 58,30" fill="var(--side-red)"/></svg>
+          <span data-i18n="mapRing">КОЛЬЦО</span>
+        </button>
+      </div>
+
+      <div class="row-label-h" data-i18n="difficulty">СЛОЖНОСТЬ</div>
+      <div class="segmented" data-key="difficulty">
+        <span class="indicator"></span>
+        <button class="seg active" data-value="0" data-i18n="diffEasy">ЛЕГКО</button>
+        <button class="seg" data-value="1" data-i18n="diffMedium">СРЕДНЕ</button>
+        <button class="seg" data-value="2" data-i18n="diffHard">СЛОЖНО</button>
+      </div>
+
+      <div class="row-label-h" data-i18n="yourSide">ВАША СТОРОНА</div>
+      <div class="segmented side-segmented" data-key="side">
+        <span class="indicator"></span>
+        <button class="seg side-blue active" data-value="0" data-i18n="sideBlue">СИНИЕ</button>
+        <button class="seg side-red" data-value="1" data-i18n="sideRed">КРАСНЫЕ</button>
+      </div>
+
+      <div class="row-label-h" data-i18n="victoryCondition">УСЛОВИЕ ПОБЕДЫ</div>
+      <div class="segmented" data-key="victoryCondition">
+        <span class="indicator"></span>
+        <button class="seg active" data-value="0" data-i18n="victoryFull">ПОЛНЫЙ ЗАХВАТ</button>
+        <button class="seg" data-value="1" data-i18n="victoryCapitulation">КАПИТУЛЯЦИЯ</button>
+      </div>
+      <div class="slider-row hidden" id="capitulationRow">
+        <div class="slider-row-top">
+          <span class="row-label" data-i18n="capitulationThreshold">ПОРОГ КАПИТУЛЯЦИИ</span>
+          <span class="slider-value" data-value-for="capitulationPercent">50%</span>
+        </div>
+        <input type="range" class="slider" data-key="capitulationPercent" min="10" max="90" value="50">
+      </div>
+
+      <div class="cheats-block">
+        <div class="row-label-h cheats-title" data-i18n="cheats">ЧИТЫ</div>
+
+        <div class="setting-row">
+          <span class="row-label" data-i18n="divisionsYou">ДИВИЗИИ (ВЫ)</span>
+          <div class="stepper" data-key="myDivisions" data-min="0" data-max="200" data-step="5">
+            <button class="stepper-btn" data-dir="-1">−</button>
+            <input type="number" class="stepper-input" value="20" min="0" max="200">
+            <button class="stepper-btn" data-dir="1">+</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="row-label" data-i18n="divisionsEnemy">ДИВИЗИИ (ПРОТИВНИК)</span>
+          <div class="stepper" data-key="enemyDivisions" data-min="0" data-max="200" data-step="5">
+            <button class="stepper-btn" data-dir="-1">−</button>
+            <input type="number" class="stepper-input" value="20" min="0" max="200">
+            <button class="stepper-btn" data-dir="1">+</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="row-label" data-i18n="attackBonus">БОНУС АТАКИ %</span>
+          <div class="stepper" data-key="attackBonus" data-min="1" data-max="999" data-step="10">
+            <button class="stepper-btn" data-dir="-1">−</button>
+            <input type="number" class="stepper-input" value="100" min="1" max="999">
+            <button class="stepper-btn" data-dir="1">+</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="row-label" data-i18n="defenseBonus">БОНУС ОБОРОНЫ %</span>
+          <div class="stepper" data-key="defenseBonus" data-min="1" data-max="999" data-step="10">
+            <button class="stepper-btn" data-dir="-1">−</button>
+            <input type="number" class="stepper-input" value="100" min="1" max="999">
+            <button class="stepper-btn" data-dir="1">+</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="row-label" data-i18n="durability">ЖИВУЧЕСТЬ ДИВИЗИЙ</span>
+          <div class="stepper" data-key="durability" data-min="2" data-max="5" data-step="0.5" data-suffix="x">
+            <button class="stepper-btn" data-dir="-1">−</button>
+            <input type="number" class="stepper-input" value="2" min="2" max="5" step="0.5">
+            <span class="stepper-suffix">×</span>
+            <button class="stepper-btn" data-dir="1">+</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="setup-right">
+      <div class="map-preview glass">
+        <div class="map-preview-item active" data-map-preview="0">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 72,0 80,20 60,40 78,60 65,80 74,100 0,100" fill="var(--side-blue)"/><polygon points="72,0 160,0 160,100 74,100 65,80 78,60 60,40 80,20" fill="var(--side-red)"/></svg>
+        </div>
+        <div class="map-preview-item hidden" data-map-preview="1">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 160,0 160,42 135,50 110,40 80,52 50,38 25,55 0,45" fill="var(--side-blue)"/><polygon points="0,45 25,55 50,38 80,52 110,40 135,50 160,42 160,100 0,100" fill="var(--side-red)"/></svg>
+        </div>
+        <div class="map-preview-item hidden" data-map-preview="2">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 160,0 160,100 0,100" fill="var(--side-red)"/><polygon points="0,20 60,20 95,45 60,80 0,80" fill="var(--side-blue)"/></svg>
+        </div>
+        <div class="map-preview-item hidden" data-map-preview="3">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 160,0 160,100 0,100" fill="var(--side-red)"/><polygon points="40,12 55,20 58,38 45,48 28,42 25,25" fill="var(--side-blue)"/><polygon points="115,49 128,55 130,72 118,80 102,75 100,58" fill="var(--side-blue)"/><polygon points="100,10 110,14 108,26 96,28 90,18" fill="var(--side-blue)"/></svg>
+        </div>
+        <div class="map-preview-item hidden" data-map-preview="4">
+          <svg viewBox="0 0 160 100"><polygon points="0,0 160,0 160,100 0,100" fill="var(--side-blue)"/><polygon points="80,22 102,30 112,50 102,70 80,78 58,70 48,50 58,30" fill="var(--side-red)"/></svg>
+        </div>
+      </div>
+      <button class="btn btn-start-game glass glass-accent" id="btnStartGame" data-i18n="play">ИГРАТЬ</button>
+    </div>
   </div>
 </div>
 

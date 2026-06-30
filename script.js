@@ -78,7 +78,19 @@
     liquidGlass: true,
     sfxVolume: 80,
     musicVolume: 65,
-    language: 0
+    language: 0,
+    selectedMode: null,
+    selectedScenario: null,
+    map: 0,
+    difficulty: 0,
+    side: 0,
+    victoryCondition: 0,
+    capitulationPercent: 50,
+    myDivisions: 20,
+    enemyDivisions: 20,
+    attackBonus: 100,
+    defenseBonus: 100,
+    durability: 2
   };
 
   window.addEventListener('resize', resize);
@@ -113,7 +125,30 @@
       liquidGlass: 'ЖИДКОЕ СТЕКЛО',
       sfxVolume: 'ЗВУКОВЫЕ ЭФФЕКТЫ',
       musicVolume: 'МУЗЫКА',
-      language: 'ЯЗЫК'
+      language: 'ЯЗЫК',
+      mapLabel: 'КАРТА',
+      mapPlains: 'РАВНИНА',
+      mapValley: 'ДОЛИНА',
+      mapPeninsula: 'ПОЛУОСТРОВ',
+      mapIslands: 'ОСТРОВА',
+      mapRing: 'КОЛЬЦО',
+      difficulty: 'СЛОЖНОСТЬ',
+      diffEasy: 'ЛЕГКО',
+      diffMedium: 'СРЕДНЕ',
+      diffHard: 'СЛОЖНО',
+      yourSide: 'ВАША СТОРОНА',
+      sideBlue: 'СИНИЕ',
+      sideRed: 'КРАСНЫЕ',
+      victoryCondition: 'УСЛОВИЕ ПОБЕДЫ',
+      victoryFull: 'ПОЛНЫЙ ЗАХВАТ',
+      victoryCapitulation: 'КАПИТУЛЯЦИЯ',
+      capitulationThreshold: 'ПОРОГ КАПИТУЛЯЦИИ',
+      cheats: 'ЧИТЫ',
+      divisionsYou: 'ДИВИЗИИ (ВЫ)',
+      divisionsEnemy: 'ДИВИЗИИ (ПРОТИВНИК)',
+      attackBonus: 'БОНУС АТАКИ %',
+      defenseBonus: 'БОНУС ОБОРОНЫ %',
+      durability: 'ЖИВУЧЕСТЬ ДИВИЗИЙ'
     },
     en: {
       play: 'PLAY',
@@ -143,7 +178,30 @@
       liquidGlass: 'LIQUID GLASS',
       sfxVolume: 'SOUND EFFECTS',
       musicVolume: 'MUSIC',
-      language: 'LANGUAGE'
+      language: 'LANGUAGE',
+      mapLabel: 'MAP',
+      mapPlains: 'PLAINS',
+      mapValley: 'VALLEY',
+      mapPeninsula: 'PENINSULA',
+      mapIslands: 'ISLANDS',
+      mapRing: 'RING',
+      difficulty: 'DIFFICULTY',
+      diffEasy: 'EASY',
+      diffMedium: 'MEDIUM',
+      diffHard: 'HARD',
+      yourSide: 'YOUR SIDE',
+      sideBlue: 'BLUE',
+      sideRed: 'RED',
+      victoryCondition: 'VICTORY CONDITION',
+      victoryFull: 'FULL CONQUEST',
+      victoryCapitulation: 'CAPITULATION',
+      capitulationThreshold: 'CAPITULATION THRESHOLD',
+      cheats: 'CHEATS',
+      divisionsYou: 'DIVISIONS (YOU)',
+      divisionsEnemy: 'DIVISIONS (ENEMY)',
+      attackBonus: 'ATTACK BONUS %',
+      defenseBonus: 'DEFENSE BONUS %',
+      durability: 'DIVISION DURABILITY'
     }
   };
 
@@ -168,6 +226,7 @@
   const modeOverlay = document.getElementById('modeOverlay');
   const settingsScreen = document.getElementById('settingsScreen');
   const langPickerOverlay = document.getElementById('langPickerOverlay');
+  const gameSetupScreen = document.getElementById('gameSetupScreen');
 
   const btnPlay = document.getElementById('btnPlay');
   const btnSettings = document.getElementById('btnSettings');
@@ -176,6 +235,8 @@
   const tabBar = document.getElementById('tabBar');
   const langRuBtn = document.getElementById('langRuBtn');
   const langEnBtn = document.getElementById('langEnBtn');
+  const setupBack = document.getElementById('setupBack');
+  const btnStartGame = document.getElementById('btnStartGame');
 
   const MODAL_OUT_MS = 180;
   const SCREEN_OUT_MS = 220;
@@ -201,9 +262,9 @@
     menuScreen.classList.add('hidden');
     modeOverlay.classList.remove('hidden', 'closing');
   }
-  function hideModal() {
+  function hideModal(toMenu) {
     modeOverlay.classList.add('closing');
-    menuScreen.classList.remove('hidden');
+    if (toMenu !== false) menuScreen.classList.remove('hidden');
     setTimeout(() => {
       modeOverlay.classList.add('hidden');
       modeOverlay.classList.remove('closing');
@@ -222,6 +283,19 @@
       settingsScreen.classList.remove('closing');
     }, SCREEN_OUT_MS);
   }
+  function showGameSetup() {
+    hideModal(false);
+    gameSetupScreen.classList.remove('hidden', 'closing');
+    refreshIndicators(gameSetupScreen);
+  }
+  function hideGameSetup() {
+    gameSetupScreen.classList.add('closing');
+    menuScreen.classList.remove('hidden');
+    setTimeout(() => {
+      gameSetupScreen.classList.add('hidden');
+      gameSetupScreen.classList.remove('closing');
+    }, SCREEN_OUT_MS);
+  }
 
   function selectLanguage(lang) {
     settingsValues.language = lang === 'en' ? 1 : 0;
@@ -238,18 +312,24 @@
 
   btnPlay.addEventListener('click', showModal);
   btnSettings.addEventListener('click', showSettings);
-  modalClose.addEventListener('click', hideModal);
+  modalClose.addEventListener('click', () => hideModal(true));
   modeOverlay.addEventListener('click', (e) => {
-    if (e.target === modeOverlay) hideModal();
+    if (e.target === modeOverlay) hideModal(true);
   });
   document.querySelectorAll('.scenario-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       settingsValues.selectedMode = btn.dataset.mode;
       settingsValues.selectedScenario = btn.dataset.scenario;
-      hideModal();
+      if (btn.dataset.mode === '1v1') {
+        showGameSetup();
+      } else {
+        hideModal(true);
+      }
     });
   });
   settingsBack.addEventListener('click', hideSettings);
+  setupBack.addEventListener('click', hideGameSetup);
+  btnStartGame.addEventListener('click', () => {});
 
   langRuBtn.addEventListener('click', () => {
     selectLanguage('ru');
@@ -284,11 +364,15 @@
       btn.classList.add('active');
       moveIndicator(group);
       const value = parseInt(btn.dataset.value, 10);
-      settingsValues[group.dataset.key] = value;
-      if (group.dataset.key === 'language') {
+      const key = group.dataset.key;
+      settingsValues[key] = value;
+      if (key === 'language') {
         const lang = value === 1 ? 'en' : 'ru';
         applyLanguage(lang);
         saveLanguage(lang);
+      }
+      if (key === 'victoryCondition') {
+        document.getElementById('capitulationRow').classList.toggle('hidden', value !== 1);
       }
     });
   });
@@ -330,6 +414,46 @@
     }
     input.addEventListener('input', update);
     update();
+  });
+
+  document.querySelectorAll('.map-thumb').forEach(thumb => {
+    thumb.addEventListener('click', () => {
+      document.querySelectorAll('.map-thumb').forEach(t => t.classList.remove('active'));
+      thumb.classList.add('active');
+      const idx = thumb.dataset.map;
+      settingsValues.map = parseInt(idx, 10);
+      document.querySelectorAll('.map-preview-item').forEach(p => {
+        p.classList.toggle('hidden', p.dataset.mapPreview !== idx);
+      });
+    });
+  });
+
+  document.querySelectorAll('.stepper').forEach(stepper => {
+    const input = stepper.querySelector('.stepper-input');
+    const min = parseFloat(stepper.dataset.min);
+    const max = parseFloat(stepper.dataset.max);
+    const step = parseFloat(stepper.dataset.step);
+    const key = stepper.dataset.key;
+
+    function clamp(v) {
+      v = Math.round(v / step) * step;
+      v = Math.max(min, Math.min(max, v));
+      return Math.round(v * 100) / 100;
+    }
+    function commit(v) {
+      v = clamp(v);
+      input.value = v;
+      settingsValues[key] = v;
+    }
+
+    stepper.querySelectorAll('.stepper-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dir = parseInt(btn.dataset.dir, 10);
+        commit(parseFloat(input.value) + dir * step);
+      });
+    });
+    input.addEventListener('change', () => commit(parseFloat(input.value) || min));
+    commit(parseFloat(input.value));
   });
 
   const savedLang = loadLanguage();
