@@ -86,6 +86,7 @@
     side: 0,
     victoryCondition: 0,
     capitulationPercent: 50,
+    cheatsEnabled: false,
     myDivisions: 20,
     enemyDivisions: 20,
     attackBonus: 100,
@@ -144,6 +145,7 @@
       victoryCapitulation: 'КАПИТУЛЯЦИЯ',
       capitulationThreshold: 'ПОРОГ КАПИТУЛЯЦИИ',
       cheats: 'ЧИТЫ',
+      cheatsHint: 'При включении читов достижения будут недоступны',
       divisionsYou: 'ДИВИЗИИ (ВЫ)',
       divisionsEnemy: 'ДИВИЗИИ (ПРОТИВНИК)',
       attackBonus: 'БОНУС АТАКИ %',
@@ -197,6 +199,7 @@
       victoryCapitulation: 'CAPITULATION',
       capitulationThreshold: 'CAPITULATION THRESHOLD',
       cheats: 'CHEATS',
+      cheatsHint: 'Enabling cheats makes achievements unavailable',
       divisionsYou: 'DIVISIONS (YOU)',
       divisionsEnemy: 'DIVISIONS (ENEMY)',
       attackBonus: 'ATTACK BONUS %',
@@ -237,6 +240,7 @@
   const langEnBtn = document.getElementById('langEnBtn');
   const setupBack = document.getElementById('setupBack');
   const btnStartGame = document.getElementById('btnStartGame');
+  const cheatsFields = document.getElementById('cheatsFields');
 
   const MODAL_OUT_MS = 180;
   const SCREEN_OUT_MS = 220;
@@ -401,20 +405,55 @@
       if (key === 'antialiasing') {
         resize();
       }
+      if (key === 'cheatsEnabled') {
+        cheatsFields.classList.toggle('hidden', wasOn);
+      }
     });
   });
 
-  document.querySelectorAll('.slider').forEach(input => {
-    const valueLabel = document.querySelector('[data-value-for="' + input.dataset.key + '"]');
-    function update() {
-      const v = input.value;
-      settingsValues[input.dataset.key] = Number(v);
-      if (valueLabel) valueLabel.textContent = v + '%';
-      input.style.background = 'linear-gradient(to right, var(--green) ' + v + '%, rgba(255,255,255,0.2) ' + v + '%)';
+  function setupCustomSlider(el) {
+    const key = el.dataset.key;
+    const min = parseFloat(el.dataset.min);
+    const max = parseFloat(el.dataset.max);
+    const track = el.querySelector('.custom-slider-track');
+    const fill = el.querySelector('.custom-slider-fill');
+    const thumb = el.querySelector('.custom-slider-thumb');
+    const valueLabel = document.querySelector('[data-value-for="' + key + '"]');
+
+    function render(v) {
+      v = Math.max(min, Math.min(max, v));
+      const pct = ((v - min) / (max - min)) * 100;
+      fill.style.width = pct + '%';
+      thumb.style.left = pct + '%';
+      const rounded = Math.round(v);
+      if (valueLabel) valueLabel.textContent = rounded + '%';
+      settingsValues[key] = rounded;
     }
-    input.addEventListener('input', update);
-    update();
-  });
+
+    function valueFromEvent(e) {
+      const rect = track.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      let pct = rect.width > 0 ? x / rect.width : 0;
+      pct = Math.max(0, Math.min(1, pct));
+      return min + pct * (max - min);
+    }
+
+    let dragging = false;
+    el.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      el.setPointerCapture(e.pointerId);
+      render(valueFromEvent(e));
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      render(valueFromEvent(e));
+    });
+    el.addEventListener('pointerup', () => { dragging = false; });
+    el.addEventListener('pointercancel', () => { dragging = false; });
+
+    render(parseFloat(el.dataset.value));
+  }
+  document.querySelectorAll('.custom-slider').forEach(setupCustomSlider);
 
   document.querySelectorAll('.map-thumb').forEach(thumb => {
     thumb.addEventListener('click', () => {
@@ -426,6 +465,14 @@
         p.classList.toggle('hidden', p.dataset.mapPreview !== idx);
       });
     });
+  });
+
+  document.querySelectorAll('.stepper-group').forEach(group => {
+    const stepper = group.querySelector('.stepper');
+    const rangeEl = group.querySelector('.stepper-range');
+    const min = stepper.dataset.min, max = stepper.dataset.max;
+    const unit = stepper.dataset.suffix || stepper.dataset.unit || '';
+    if (rangeEl) rangeEl.textContent = min + unit + '\u2013' + max + unit;
   });
 
   document.querySelectorAll('.stepper').forEach(stepper => {
